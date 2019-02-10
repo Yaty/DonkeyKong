@@ -88,9 +88,9 @@ void Game::drawLadders() {
         _Ladder[i].setTexture(_LadderTexture);
 
         if (i % 2){
-            _Ladder[i].setPosition(830.f + 70.f, 0.f + BLOCK_SPACE * (i + 1) + _sizeBlock.y);
+            _Ladder[i].setPosition(830.f + 70.f, -30.f + BLOCK_SPACE * (i + 1) + _sizeBlock.y);
         } else {
-            _Ladder[i].setPosition(230.f + 70.f, 0.f + BLOCK_SPACE * (i + 1) + _sizeBlock.y);
+            _Ladder[i].setPosition(230.f + 70.f, -30.f + BLOCK_SPACE * (i + 1) + _sizeBlock.y);
         }
 
         std::shared_ptr<Entity> se = std::make_shared<Entity>(false, EntityType::scale);
