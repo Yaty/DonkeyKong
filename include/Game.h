@@ -15,6 +15,7 @@
 #define SCREEN_WIDTH 960
 #define MARIO_HEIGHT 48
 #define MARIO_WIDTH 32
+#define MARIO_JUMP 64
 
 class Game {
     public:
@@ -38,10 +39,13 @@ class Game {
         void drawCoins();
         void handleCoins();
         void drawScore();
+        void handleFloors();
+        void handleLadders();
 
     private:
         static const float PlayerSpeed;
         static const sf::Time TimePerFrame;
+        sf::Clock clock;
 
         sf::RenderWindow mWindow;
         sf::Texture mSpriteSheet;

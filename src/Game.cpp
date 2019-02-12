@@ -15,6 +15,8 @@ const std::string MarioSpriteSheetPath = "../Media/Textures/mario_sprite.png";
 const std::string StatisticsFontPath = "../Media/Sansation.ttf";
 const std::string CoinTexturePath = "../Media/Textures/coin.png";
 const std::string ScoreFontPath = "../Media/BlockyLettersHollow.ttf";
+const sf::Time jumpTime = sf::seconds(0.4f);
+
 
 Game::Game() :
     mWindow(sf::VideoMode(SCREEN_HEIGHT, SCREEN_WIDTH), "Donkey Kong 1981", sf::Style::Close),
@@ -193,16 +195,18 @@ void Game::drawCoins() {
 }
 
 void Game::run() {
-    sf::Clock clock;
+    sf::Clock fpsClock;
     sf::Time timeSinceLastUpdate = sf::Time::Zero;
 
     while (mWindow.isOpen()) {
-        sf::Time elapsedTime = clock.restart();
+        sf::Time elapsedTime = fpsClock.restart();
         timeSinceLastUpdate += elapsedTime;
 
         while (timeSinceLastUpdate > TimePerFrame) {
             timeSinceLastUpdate -= TimePerFrame;
             processEvents();
+            handleLadders();
+            handleFloors();
             handleCoins();
             update(TimePerFrame);
         }
@@ -237,12 +241,21 @@ void Game::processEvents(){
 
 void Game::update(sf::Time elapsedTime){
     sf::Vector2f movement(0.f, 0.f);
+    if(mario->isJumping && mario->lastJump + jumpTime > clock.getElapsedTime()) {
+        movement.y -= PlayerSpeed;
+    } else {
+        mario->isJumping = false;
+    }
 
-    if (mario->isMovingUp) {
+    if(mario->isFalling && !mario->isOnLadder && !mario->isJumping){
+        movement.y += PlayerSpeed;
+    }
+
+    if (mario->isMovingUp && mario->isOnLadder) {
         movement.y -= PlayerSpeed;
     }
 
-    if (mario->isMovingDown) {
+    if (mario->isMovingDown && mario->isOnLadder) {
         movement.y += PlayerSpeed;
     }
 
@@ -347,6 +360,10 @@ void Game::handlePlayerInput(sf::Keyboard::Key key, bool isPressed) {
 
         // TODO: Jump!!!
         case sf::Keyboard::Space:
+            if (!mario->isFalling) {
+                mario->lastJump = clock.getElapsedTime();
+                mario->isJumping = isPressed;
+            }
             break;
     }
 }
@@ -366,6 +383,40 @@ void Game::handleCoins() {
         if (coinGlobalBounds.intersects(playerBounds)) {
             EntityManager::RemoveCoin(coin);
             score += COIN_VALUE;
+        }
+    }
+}
+
+void Game::handleFloors() {
+    auto floors = EntityManager::GetFloors();
+    auto playerBounds = sf::Rect<float>(
+            mario->m_position.x,
+            mario->m_position.y,
+            mario->m_size.x,
+            mario->m_size.y
+    );
+    mario->isFalling = true;
+    for (auto const& floor: floors) {
+        auto floorGloabalBounds = floor.get()->m_sprite.getGlobalBounds();
+        if (floorGloabalBounds.intersects(playerBounds)) {
+            mario->isFalling = false;
+        }
+    }
+}
+
+void Game::handleLadders() {
+    auto ladders = EntityManager::GetLadders();
+    auto playerBounds = sf::Rect<float>(
+            mario->m_position.x,
+            mario->m_position.y,
+            mario->m_size.x,
+            mario->m_size.y
+    );
+    mario->isOnLadder = false;
+    for (auto const& ladder: ladders) {
+        auto ladderGloabalBounds = ladder.get()->m_sprite.getGlobalBounds();
+        if (ladderGloabalBounds.intersects(playerBounds)) {
+            mario->isOnLadder = true;
         }
     }
 }
