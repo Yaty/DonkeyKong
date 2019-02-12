@@ -15,7 +15,7 @@
 #define SCREEN_WIDTH 960
 #define MARIO_HEIGHT 48
 #define MARIO_WIDTH 32
-#define MARIO_JUMP 64
+#define MARIO_GRAVITY 200.0f
 
 class Game {
     public:

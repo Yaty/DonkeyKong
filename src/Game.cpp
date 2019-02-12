@@ -15,7 +15,7 @@ const std::string MarioSpriteSheetPath = "../Media/Textures/mario_sprite.png";
 const std::string StatisticsFontPath = "../Media/Sansation.ttf";
 const std::string CoinTexturePath = "../Media/Textures/coin.png";
 const std::string ScoreFontPath = "../Media/BlockyLettersHollow.ttf";
-const sf::Time jumpTime = sf::seconds(0.4f);
+const sf::Time jumpTime = sf::seconds(0.2f);
 
 
 Game::Game() :
@@ -95,7 +95,7 @@ void Game::drawLadders() {
             _Ladder[i].setPosition(230.f + 70.f, -30.f + BLOCK_SPACE * (i + 1) + _sizeBlock.y);
         }
 
-        std::shared_ptr<Entity> se = std::make_shared<Entity>(false, EntityType::scale);
+        std::shared_ptr<Entity> se = std::make_shared<Entity>(false, EntityType::ladder);
         se->m_sprite = _Ladder[i];
         se->m_size = _LadderTexture.getSize();
         se->m_position = _Ladder[i].getPosition();
@@ -242,13 +242,13 @@ void Game::processEvents(){
 void Game::update(sf::Time elapsedTime){
     sf::Vector2f movement(0.f, 0.f);
     if(mario->isJumping && mario->lastJump + jumpTime > clock.getElapsedTime()) {
-        movement.y -= PlayerSpeed;
+        movement.y -= MARIO_GRAVITY;
     } else {
         mario->isJumping = false;
     }
 
     if(mario->isFalling && !mario->isOnLadder && !mario->isJumping){
-        movement.y += PlayerSpeed;
+        movement.y += MARIO_GRAVITY;
     }
 
     if (mario->isMovingUp && mario->isOnLadder) {
@@ -400,6 +400,7 @@ void Game::handleFloors() {
         auto floorGloabalBounds = floor.get()->m_sprite.getGlobalBounds();
         if (floorGloabalBounds.intersects(playerBounds)) {
             mario->isFalling = false;
+            return;
         }
     }
 }
@@ -417,6 +418,7 @@ void Game::handleLadders() {
         auto ladderGloabalBounds = ladder.get()->m_sprite.getGlobalBounds();
         if (ladderGloabalBounds.intersects(playerBounds)) {
             mario->isOnLadder = true;
+            return;
         }
     }
 }
