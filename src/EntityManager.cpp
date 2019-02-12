@@ -33,13 +33,13 @@ std::list<std::shared_ptr<Entity>> EntityManager::GetFloors() {
 }
 
 std::list<std::shared_ptr<Entity>> EntityManager::GetLadders() {
-    std::list<std::shared_ptr<Entity>> floors;
+    std::list<std::shared_ptr<Entity>> ladders;
 
     for (auto const& entity : EntityManager::m_Entities) {
-        if (entity->m_type == EntityType::scale) {
-            floors.push_back(entity);
+        if (entity->m_type == EntityType::ladder) {
+            ladders.push_back(entity);
         }
     }
 
-    return floors;
+    return ladders;
 }
