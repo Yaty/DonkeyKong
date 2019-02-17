@@ -279,7 +279,7 @@ void Game::update(sf::Time elapsedTime){
     mario->m_position.y += movement.y * elapsedTime.asSeconds();
 
     // Handle floor elevation
-    if (!mario->isOnLadder && !mario->isFalling && !mario->isJumping) {
+    if (mario->isOnTheFloor()) {
         const auto floors = EntityManager::GetFloors();
         const auto playerBounds = mario->getBounds();
 
@@ -406,7 +406,8 @@ void Game::handleFloors() {
         const auto floorGlobalBounds = floor.get()->m_sprite.getGlobalBounds();
 
         if (floorGlobalBounds.intersects(playerBounds)) {
-            mario->isFalling = false;
+            const auto isPlayerBeneathFloor = floorGlobalBounds.top - playerBounds.top < 0;
+            mario->isFalling = isPlayerBeneathFloor;
             return;
         }
     }

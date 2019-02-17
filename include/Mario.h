@@ -21,5 +21,6 @@ class Mario: public Entity {
         sf::Sprite standingRightRect;
         sf::Sprite standingLeftRect;
         sf::Rect<float> getBounds() const;
+        bool isOnTheFloor() const;
 };
 
