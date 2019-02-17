@@ -3,9 +3,9 @@
 #include "Entity.h"
 
 class Mario: public Entity {
-
     public:
         Mario() : Entity(true, EntityType::player) {}
+
         bool isMovingUp = false;
         bool isMovingDown = false;
         bool isMovingRight = false;
@@ -20,5 +20,6 @@ class Mario: public Entity {
         Animation walkingAnimationRight;
         sf::Sprite standingRightRect;
         sf::Sprite standingLeftRect;
+        sf::Rect<float> getBounds() const;
 };
 

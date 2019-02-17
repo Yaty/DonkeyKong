@@ -116,8 +116,8 @@ void Game::drawMario() {
     mario->m_position = sf::Vector2f(100.f + 70.f, BLOCK_SPACE * 7 - MARIO_HEIGHT);
 
     // Static sprites
-    auto standingRightSprite = sf::IntRect(162, 0, FRAME_WIDTH, FRAME_HEIGHT);
-    auto standingLeftSprite = sf::IntRect(122, 0, FRAME_WIDTH, FRAME_HEIGHT);
+    const auto standingRightSprite = sf::IntRect(162, 0, FRAME_WIDTH, FRAME_HEIGHT);
+    const auto standingLeftSprite = sf::IntRect(122, 0, FRAME_WIDTH, FRAME_HEIGHT);
     mario->standingRightRect = sf::Sprite(mSpriteSheet, standingRightSprite);
     mario->standingLeftRect = sf::Sprite(mSpriteSheet, standingLeftSprite);
     mario->m_sprite = mario->standingRightRect;
@@ -176,10 +176,10 @@ void Game::drawCoins() {
         _Coin[i].setTexture(_CoinTexture);
 
         // Get random block, then put a coin upon it
-        int blockX = getRandomNumber(0, BLOCK_COUNT_X);
-        int blockY = getRandomNumber(0, BLOCK_COUNT_Y);
+        const int blockX = getRandomNumber(0, BLOCK_COUNT_X);
+        const int blockY = getRandomNumber(0, BLOCK_COUNT_Y);
 
-        sf::Sprite randomBlock = _Block[blockX][blockY];
+        const sf::Sprite randomBlock = _Block[blockX][blockY];
 
         _Coin[i].setPosition(
             randomBlock.getPosition().x,
@@ -241,6 +241,7 @@ void Game::processEvents(){
 
 void Game::update(sf::Time elapsedTime){
     sf::Vector2f movement(0.f, 0.f);
+
     if(mario->isJumping && mario->lastJump + jumpTime > clock.getElapsedTime()) {
         movement.y -= MARIO_GRAVITY;
     } else {
@@ -273,8 +274,24 @@ void Game::update(sf::Time elapsedTime){
         mario->isFacingLeft = false;
     }
 
+    mario->isMoving = fabs(movement.x) > 0;
     mario->m_position.x += movement.x * elapsedTime.asSeconds();
     mario->m_position.y += movement.y * elapsedTime.asSeconds();
+
+    // Handle floor elevation
+    if (!mario->isOnLadder && !mario->isFalling) {
+        const auto floors = EntityManager::GetFloors();
+        const auto playerBounds = mario->getBounds();
+
+        for (auto const& floor : floors) {
+            const auto floorGlobalBounds = floor.get()->m_sprite.getGlobalBounds();
+
+            if (floorGlobalBounds.intersects(playerBounds)) {
+                mario->m_position.y -= mario->m_position.y - floorGlobalBounds.top + MARIO_HEIGHT;
+                break;
+            }
+        }
+    }
 
     mario->animatedSprite.play(*mario->currentAnimation);
     mario->animatedSprite.setPosition(mario->m_position);
@@ -336,49 +353,40 @@ void Game::updateStatistics(sf::Time elapsedTime) {
         mStatisticsUpdateTime -= sf::seconds(1.0f);
         mStatisticsNumFrames = 0;
     }
-
-    // Handle collision
-    if (mStatisticsUpdateTime >= sf::seconds(0.050f)) {
-        // Handle collision weapon enemies
-    }
 }
 
 void Game::handlePlayerInput(sf::Keyboard::Key key, bool isPressed) {
     switch (key) {
         case sf::Keyboard::Up:
-            mario->isMovingUp = mario->isMoving = isPressed;
+            mario->isMovingUp = isPressed;
             break;
         case sf::Keyboard::Down:
-            mario->isMovingDown = mario->isMoving = isPressed;
+            mario->isMovingDown = isPressed;
             break;
         case sf::Keyboard::Left:
-            mario->isMovingLeft = mario->isMoving = isPressed;
+            mario->isMovingLeft = isPressed;
             break;
         case sf::Keyboard::Right:
-            mario->isMovingRight = mario->isMoving = isPressed;
+            mario->isMovingRight = isPressed;
             break;
 
-        // TODO: Jump!!!
         case sf::Keyboard::Space:
-            if (!mario->isFalling) {
-                mario->lastJump = clock.getElapsedTime();
-                mario->isJumping = isPressed;
+            if (mario->isFalling) {
+                break;
             }
+
+            mario->lastJump = clock.getElapsedTime();
+            mario->isJumping = isPressed;
             break;
     }
 }
 
 void Game::handleCoins() {
-    auto coins = EntityManager::GetCoins();
-    auto playerBounds = sf::Rect<float>(
-        mario->m_position.x,
-        mario->m_position.y,
-        mario->m_size.x,
-        mario->m_size.y
-    );
+    const auto coins = EntityManager::GetCoins();
+    const auto playerBounds  = mario->getBounds();
 
     for (auto const& coin: coins) {
-        auto coinGlobalBounds = coin.get()->m_sprite.getGlobalBounds();
+        const auto coinGlobalBounds = coin.get()->m_sprite.getGlobalBounds();
 
         if (coinGlobalBounds.intersects(playerBounds)) {
             EntityManager::RemoveCoin(coin);
@@ -388,17 +396,16 @@ void Game::handleCoins() {
 }
 
 void Game::handleFloors() {
-    auto floors = EntityManager::GetFloors();
-    auto playerBounds = sf::Rect<float>(
-            mario->m_position.x,
-            mario->m_position.y,
-            mario->m_size.x,
-            mario->m_size.y
-    );
+    const auto floors = EntityManager::GetFloors();
+    auto playerBounds = mario->getBounds();
+
+    playerBounds.height += 1;
     mario->isFalling = true;
+
     for (auto const& floor: floors) {
-        auto floorGloabalBounds = floor.get()->m_sprite.getGlobalBounds();
-        if (floorGloabalBounds.intersects(playerBounds)) {
+        const auto floorGlobalBounds = floor.get()->m_sprite.getGlobalBounds();
+
+        if (floorGlobalBounds.intersects(playerBounds)) {
             mario->isFalling = false;
             return;
         }
@@ -406,17 +413,17 @@ void Game::handleFloors() {
 }
 
 void Game::handleLadders() {
-    auto ladders = EntityManager::GetLadders();
-    auto playerBounds = sf::Rect<float>(
-            mario->m_position.x,
-            mario->m_position.y,
-            mario->m_size.x,
-            mario->m_size.y
-    );
+    const auto ladders = EntityManager::GetLadders();
+    const auto playerBounds = mario->getBounds();
+    const auto marioCenterX = playerBounds.left + playerBounds.width / 2;
+
     mario->isOnLadder = false;
+
     for (auto const& ladder: ladders) {
-        auto ladderGloabalBounds = ladder.get()->m_sprite.getGlobalBounds();
-        if (ladderGloabalBounds.intersects(playerBounds)) {
+        const auto ladderGlobalBounds = ladder.get()->m_sprite.getGlobalBounds();
+        const auto ladderCenterX = ladderGlobalBounds.left + ladderGlobalBounds.width / 2;
+
+        if (ladderGlobalBounds.intersects(playerBounds) && std::fabs(ladderCenterX - marioCenterX) < 7) {
             mario->isOnLadder = true;
             return;
         }
