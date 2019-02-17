@@ -274,6 +274,14 @@ void Game::update(sf::Time elapsedTime){
         mario->isFacingLeft = false;
     }
 
+    if (mario->isOnTopOfLadder()) {
+        mario->isOnLadder = false;
+    }
+
+    if (mario->isOnLadder && mario->getDistanceFromFloor() > 0) {
+        movement.x = 0;
+    }
+
     mario->isMoving = fabs(movement.x) > 0;
     mario->m_position.x += movement.x * elapsedTime.asSeconds();
     mario->m_position.y += movement.y * elapsedTime.asSeconds();
