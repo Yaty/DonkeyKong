@@ -279,7 +279,7 @@ void Game::update(sf::Time elapsedTime){
     mario->m_position.y += movement.y * elapsedTime.asSeconds();
 
     // Handle floor elevation
-    if (!mario->isOnLadder && !mario->isFalling) {
+    if (!mario->isOnLadder && !mario->isFalling && !mario->isJumping) {
         const auto floors = EntityManager::GetFloors();
         const auto playerBounds = mario->getBounds();
 
