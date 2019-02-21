@@ -63,7 +63,7 @@ bool Mario::isOnTopOfLadder() const {
     for (auto const& ladder : laddersInTheSameXAxis) {
         const auto ladderGlobalBounds = ladder.get()->m_sprite.getGlobalBounds();
 
-        if (fabs(ladderGlobalBounds.top - playerFeetY) <= 5) {
+        if (fabs(ladderGlobalBounds.top - playerFeetY) <= 8) {
             return true;
         }
     }
