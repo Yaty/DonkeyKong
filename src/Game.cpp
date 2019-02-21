@@ -442,7 +442,7 @@ void Game::handleLaddersCollisions() {
 }
 
 void Game::handleElevationCollisions() {
-    if (mario->isClimbing) {
+    if (mario->isClimbing || mario->onTheFloor || mario->onTopOfLadder) {
         return;
     }
 
