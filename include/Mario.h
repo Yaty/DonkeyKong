@@ -23,8 +23,9 @@ class Mario: public Entity {
         sf::Sprite standingLeftRect;
         sf::Rect<float> getBounds() const;
         bool isOnTheFloor() const;
-        float getDistanceFromFloor() const;
         bool isOnTopOfLadder() const;
+        bool isOnBottomOfLadder() const;
         std::list<std::shared_ptr<Entity>> getEntitiesInTheSameXAxis(std::list<std::shared_ptr<Entity>> entities) const;
+        bool isClimbing;
 };
 

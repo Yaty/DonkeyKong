@@ -86,10 +86,10 @@ void Game::drawBlocks() {
 void Game::drawLadders() {
     _LadderTexture.loadFromFile(LadderTexturePath);
 
-    for (int i = 0; i <= SCALE_COUNT; i++) {
+    for (int i = 0; i < SCALE_COUNT; i++) {
         _Ladder[i].setTexture(_LadderTexture);
 
-        if (i % 2){
+        if (i % 2) {
             _Ladder[i].setPosition(830.f + 70.f, -30.f + BLOCK_SPACE * (i + 1) + _sizeBlock.y);
         } else {
             _Ladder[i].setPosition(230.f + 70.f, -30.f + BLOCK_SPACE * (i + 1) + _sizeBlock.y);
@@ -205,9 +205,7 @@ void Game::run() {
         while (timeSinceLastUpdate > TimePerFrame) {
             timeSinceLastUpdate -= TimePerFrame;
             processEvents();
-            handleLadders();
-            handleFloors();
-            handleCoins();
+            handleCollisions();
             update(TimePerFrame);
         }
 
@@ -241,23 +239,17 @@ void Game::processEvents(){
 
 void Game::update(sf::Time elapsedTime){
     sf::Vector2f movement(0.f, 0.f);
+    const auto isOnBottomOfLadder = mario->isOnBottomOfLadder();
+    const auto isOnTopOfLadder = mario->isOnTopOfLadder();
 
-    if(mario->isJumping && mario->lastJump + jumpTime > clock.getElapsedTime()) {
+    if (mario->isJumping && mario->lastJump + jumpTime > clock.getElapsedTime()) {
         movement.y -= MARIO_GRAVITY;
     } else {
         mario->isJumping = false;
     }
 
-    if(mario->isFalling && !mario->isOnLadder && !mario->isJumping){
+    if (mario->isFalling && !mario->isOnLadder && !mario->isJumping){
         movement.y += MARIO_GRAVITY;
-    }
-
-    if (mario->isMovingUp && mario->isOnLadder) {
-        movement.y -= PlayerSpeed;
-    }
-
-    if (mario->isMovingDown && mario->isOnLadder) {
-        movement.y += PlayerSpeed;
     }
 
     if (mario->isMovingLeft) {
@@ -274,32 +266,36 @@ void Game::update(sf::Time elapsedTime){
         mario->isFacingLeft = false;
     }
 
-    if (mario->isOnTopOfLadder()) {
-        mario->isOnLadder = false;
+    if (isOnTopOfLadder) {
+        mario->isClimbing = mario->isMovingDown;
+    } else if (isOnBottomOfLadder) {
+        mario->isClimbing = mario->isMovingUp;
     }
 
-    if (mario->isOnLadder && mario->getDistanceFromFloor() > 0) {
-        movement.x = 0;
+    if (mario->isOnLadder && mario->isClimbing) {
+        if (mario->isMovingUp) {
+            if (isOnTopOfLadder) {
+                mario->isClimbing = false;
+            } else {
+                movement.y -= PlayerSpeed;
+                movement.x = 0;
+            }
+        } else if (mario->isMovingDown) {
+            if (isOnBottomOfLadder) {
+                movement.y = 0;
+                mario->isClimbing = false;
+            } else {
+                movement.y += PlayerSpeed;
+                movement.x = 0;
+            }
+        } else {
+            movement.x = 0;
+        }
     }
 
     mario->isMoving = fabs(movement.x) > 0;
     mario->m_position.x += movement.x * elapsedTime.asSeconds();
     mario->m_position.y += movement.y * elapsedTime.asSeconds();
-
-    // Handle floor elevation
-    if (mario->isOnTheFloor()) {
-        const auto floors = EntityManager::GetFloors();
-        const auto playerBounds = mario->getBounds();
-
-        for (auto const& floor : floors) {
-            const auto floorGlobalBounds = floor.get()->m_sprite.getGlobalBounds();
-
-            if (floorGlobalBounds.intersects(playerBounds)) {
-                mario->m_position.y -= mario->m_position.y - floorGlobalBounds.top + MARIO_HEIGHT;
-                break;
-            }
-        }
-    }
 
     mario->animatedSprite.play(*mario->currentAnimation);
     mario->animatedSprite.setPosition(mario->m_position);
@@ -318,7 +314,7 @@ void Game::update(sf::Time elapsedTime){
     }
 }
 
-void Game::render(){
+void Game::render() {
     mWindow.clear();
 
     for (const std::shared_ptr<Entity> &entity : EntityManager::m_Entities) {
@@ -389,7 +385,14 @@ void Game::handlePlayerInput(sf::Keyboard::Key key, bool isPressed) {
     }
 }
 
-void Game::handleCoins() {
+void Game::handleCollisions() {
+    handleElevationCollisions();
+    handleLaddersCollisions();
+    handleFloorsCollisions();
+    handleCoinsCollisions();
+}
+
+void Game::handleCoinsCollisions() {
     const auto coins = EntityManager::GetCoins();
     const auto playerBounds  = mario->getBounds();
 
@@ -403,7 +406,7 @@ void Game::handleCoins() {
     }
 }
 
-void Game::handleFloors() {
+void Game::handleFloorsCollisions() {
     const auto floors = EntityManager::GetFloors();
     auto playerBounds = mario->getBounds();
 
@@ -421,20 +424,34 @@ void Game::handleFloors() {
     }
 }
 
-void Game::handleLadders() {
+void Game::handleLaddersCollisions() {
     const auto ladders = EntityManager::GetLadders();
     const auto playerBounds = mario->getBounds();
-    const auto marioCenterX = playerBounds.left + playerBounds.width / 2;
 
     mario->isOnLadder = false;
 
     for (auto const& ladder: ladders) {
         const auto ladderGlobalBounds = ladder.get()->m_sprite.getGlobalBounds();
-        const auto ladderCenterX = ladderGlobalBounds.left + ladderGlobalBounds.width / 2;
 
-        if (ladderGlobalBounds.intersects(playerBounds) && std::fabs(ladderCenterX - marioCenterX) < 7) {
+        if (ladderGlobalBounds.intersects(playerBounds)) {
             mario->isOnLadder = true;
             return;
+        }
+    }
+}
+
+void Game::handleElevationCollisions() {
+    if (mario->isOnTheFloor()) {
+        const auto floors = EntityManager::GetFloors();
+        const auto playerBounds = mario->getBounds();
+
+        for (auto const& floor : floors) {
+            const auto floorGlobalBounds = floor.get()->m_sprite.getGlobalBounds();
+
+            if (floorGlobalBounds.intersects(playerBounds)) {
+                mario->m_position.y -= mario->m_position.y - floorGlobalBounds.top + MARIO_HEIGHT;
+                break;
+            }
         }
     }
 }

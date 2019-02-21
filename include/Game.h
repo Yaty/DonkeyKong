@@ -37,10 +37,12 @@ class Game {
         void drawMario();
         void drawStatistics();
         void drawCoins();
-        void handleCoins();
+        void handleCoinsCollisions();
         void drawScore();
-        void handleFloors();
-        void handleLadders();
+        void handleFloorsCollisions();
+        void handleLaddersCollisions();
+        void handleElevationCollisions();
+        void handleCollisions();
 
     private:
         static const float PlayerSpeed;

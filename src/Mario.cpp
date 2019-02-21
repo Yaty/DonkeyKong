@@ -12,24 +12,6 @@ sf::Rect<float> Mario::getBounds() const {
     };
 }
 
-bool Mario::isOnTheFloor() const {
-    const auto floors = EntityManager::GetFloors();
-    const auto playerBounds = getBounds();
-
-    const auto playerFeetY = playerBounds.top + playerBounds.height;
-
-    for (auto const& floor : floors) {
-        const auto floorGlobalBounds = floor.get()->m_sprite.getGlobalBounds();
-        const auto floorY = floorGlobalBounds.top;
-
-        if (fabs(floorY - playerFeetY) < 5) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
 std::list<std::shared_ptr<Entity>> Mario::getEntitiesInTheSameXAxis(std::list<std::shared_ptr<Entity>> entities) const {
     const auto floors = EntityManager::GetFloors();
     const auto playerBounds = getBounds();
@@ -51,27 +33,28 @@ std::list<std::shared_ptr<Entity>> Mario::getEntitiesInTheSameXAxis(std::list<st
     return entitiesInTheSameXAxis;
 }
 
-float Mario::getDistanceFromFloor() const {
-    const auto floors = EntityManager::GetFloors();
+bool Mario::isOnTheFloor() const {
     const auto playerBounds = getBounds();
-    const auto floorsInTheSameXAxis = getEntitiesInTheSameXAxis(EntityManager::GetFloors());
-
-    float distance = SCREEN_HEIGHT;
     const auto playerFeetY = playerBounds.top + playerBounds.height;
+    const auto floorsInTheSameXAxis = getEntitiesInTheSameXAxis(EntityManager::GetFloors());
 
     for (auto const& floor : floorsInTheSameXAxis) {
         const auto floorGlobalBounds = floor.get()->m_sprite.getGlobalBounds();
-        auto diff = floorGlobalBounds.top - playerFeetY;
+        const auto floorY = floorGlobalBounds.top;
 
-        if (diff >= 0 && diff < distance) {
-            distance = diff;
+        if (fabs(floorY - playerFeetY) <= 1) {
+            return true;
         }
     }
 
-    return distance;
+    return false;
 }
 
 bool Mario::isOnTopOfLadder() const {
+    if (!isOnTheFloor()) {
+        return false;
+    }
+
     const auto ladders = EntityManager::GetLadders();
     const auto playerBounds = getBounds();
     const auto playerFeetY = playerBounds.top + playerBounds.height;
@@ -79,9 +62,27 @@ bool Mario::isOnTopOfLadder() const {
 
     for (auto const& ladder : laddersInTheSameXAxis) {
         const auto ladderGlobalBounds = ladder.get()->m_sprite.getGlobalBounds();
-        const auto diff = ladderGlobalBounds.top - playerFeetY;
 
-        if (fabs(diff) < 5 && isOnTheFloor()) {
+        if (fabs(ladderGlobalBounds.top - playerFeetY) <= 5) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool Mario::isOnBottomOfLadder() const {
+    if (!isOnTheFloor()) {
+        return false;
+    }
+
+    const auto ladders = EntityManager::GetLadders();
+    const auto playerBounds = getBounds();
+    const auto playerFeetY = playerBounds.top + playerBounds.height;
+    const auto laddersInTheSameXAxis = getEntitiesInTheSameXAxis(EntityManager::GetLadders());
+
+    for (auto const& ladder : laddersInTheSameXAxis) {
+        if (fabs(ladder.get()->m_position.y + ladder.get()->m_size.y - playerFeetY) <= 5) {
             return true;
         }
     }
