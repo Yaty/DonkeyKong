@@ -239,8 +239,9 @@ void Game::processEvents(){
 
 void Game::update(sf::Time elapsedTime){
     sf::Vector2f movement(0.f, 0.f);
-    const auto isOnBottomOfLadder = mario->isOnBottomOfLadder();
-    const auto isOnTopOfLadder = mario->isOnTopOfLadder();
+    mario->onTheFloor = mario->isOnTheFloor();
+    mario->onBottomOfLadder = mario->isOnBottomOfLadder();
+    mario->onTopOfLadder = mario->isOnTopOfLadder();
 
     if (mario->isJumping && mario->lastJump + jumpTime > clock.getElapsedTime()) {
         movement.y -= MARIO_GRAVITY;
@@ -248,7 +249,7 @@ void Game::update(sf::Time elapsedTime){
         mario->isJumping = false;
     }
 
-    if (mario->isFalling && !mario->isOnLadder && !mario->isJumping){
+    if (mario->isFalling && !mario->isClimbing && !mario->isJumping){
         movement.y += MARIO_GRAVITY;
     }
 
@@ -266,22 +267,22 @@ void Game::update(sf::Time elapsedTime){
         mario->isFacingLeft = false;
     }
 
-    if (isOnTopOfLadder) {
+    if (mario->onTopOfLadder) {
         mario->isClimbing = mario->isMovingDown;
-    } else if (isOnBottomOfLadder) {
+    } else if (mario->onBottomOfLadder) {
         mario->isClimbing = mario->isMovingUp;
     }
 
     if (mario->isOnLadder && mario->isClimbing) {
         if (mario->isMovingUp) {
-            if (isOnTopOfLadder) {
+            if (mario->onTopOfLadder) {
                 mario->isClimbing = false;
             } else {
                 movement.y -= PlayerSpeed;
                 movement.x = 0;
             }
         } else if (mario->isMovingDown) {
-            if (isOnBottomOfLadder) {
+            if (mario->onBottomOfLadder) {
                 movement.y = 0;
                 mario->isClimbing = false;
             } else {
@@ -441,6 +442,10 @@ void Game::handleLaddersCollisions() {
 }
 
 void Game::handleElevationCollisions() {
+    if (mario->isClimbing) {
+        return;
+    }
+
     if (mario->isOnTheFloor()) {
         const auto floors = EntityManager::GetFloors();
         const auto playerBounds = mario->getBounds();

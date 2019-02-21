@@ -16,6 +16,9 @@ class Mario: public Entity {
         bool isFalling = true;
         bool isJumping = false;
         bool isOnLadder = false;
+        bool onBottomOfLadder = false;
+        bool onTopOfLadder = false;
+        bool onTheFloor = true;
         sf::Time lastJump;
         Animation walkingAnimationLeft;
         Animation walkingAnimationRight;
