@@ -42,7 +42,7 @@ bool Mario::isOnTheFloor() const {
         const auto floorGlobalBounds = floor.get()->m_sprite.getGlobalBounds();
         const auto floorY = floorGlobalBounds.top;
 
-        if (fabs(floorY - playerFeetY) <= 5) {
+        if (fabs(floorY - playerFeetY) <= 10) {
             return true;
         }
     }
