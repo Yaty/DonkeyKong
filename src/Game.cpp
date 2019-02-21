@@ -19,7 +19,7 @@ const sf::Time jumpTime = sf::seconds(0.2f);
 
 
 Game::Game() :
-    mWindow(sf::VideoMode(SCREEN_HEIGHT, SCREEN_WIDTH), "Donkey Kong 1981", sf::Style::Close),
+    mWindow(sf::VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), "Donkey Kong 1981", sf::Style::Close),
     mSpriteSheet(),
     mFont(),
     scoreFont(),
@@ -292,6 +292,12 @@ void Game::update(sf::Time elapsedTime){
         } else {
             movement.x = 0;
         }
+    }
+
+    auto nextXPosition = mario->m_position.x + (movement.x * elapsedTime.asSeconds());
+
+    if (nextXPosition <= 0 || nextXPosition >= SCREEN_WIDTH) {
+        movement.x = 0;
     }
 
     mario->isMoving = fabs(movement.x) > 0;
