@@ -11,8 +11,8 @@
 #define BLOCK_SPACE 130.f
 #define COIN_COUNT 5
 #define COIN_VALUE 100
-#define SCREEN_HEIGHT 1280
-#define SCREEN_WIDTH 960
+#define SCREEN_HEIGHT 960
+#define SCREEN_WIDTH 1280
 #define MARIO_HEIGHT 48
 #define MARIO_WIDTH 32
 #define MARIO_GRAVITY 200.0f
@@ -37,10 +37,12 @@ class Game {
         void drawMario();
         void drawStatistics();
         void drawCoins();
-        void handleCoins();
+        void handleCoinsCollisions();
         void drawScore();
-        void handleFloors();
-        void handleLadders();
+        void handleFloorsCollisions();
+        void handleLaddersCollisions();
+        void handleElevationCollisions();
+        void handleCollisions();
 
     private:
         static const float PlayerSpeed;
