@@ -387,8 +387,8 @@ void Game::handlePlayerInput(sf::Keyboard::Key key, bool isPressed) {
 }
 
 void Game::handleCollisions() {
-    handleElevationCollisions();
     handleLaddersCollisions();
+    handleElevationCollisions();
     handleFloorsCollisions();
     handleCoinsCollisions();
 }
