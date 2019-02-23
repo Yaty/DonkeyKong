@@ -9,7 +9,7 @@
 #define BASE_BLOCK_COUNT 20
 #define BLOCK_COUNT_Y 6
 #define BLOCK_SPACE 130.f
-#define COIN_COUNT 5
+#define COIN_COUNT 9
 #define COIN_VALUE 100
 #define SCREEN_HEIGHT 960
 #define SCREEN_WIDTH 1280

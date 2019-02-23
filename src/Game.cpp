@@ -108,8 +108,8 @@ void Game::drawMario() {
 
     const int FRAME_WIDTH = 16;
     const int FRAME_HEIGHT = 16;
-    const float SCALE_WIDTH = MARIO_WIDTH / FRAME_WIDTH;
-    const float SCALE_HEIGHT = MARIO_HEIGHT / FRAME_HEIGHT;
+    const auto SCALE_WIDTH = MARIO_WIDTH / FRAME_WIDTH;
+    const auto SCALE_HEIGHT = MARIO_HEIGHT / FRAME_HEIGHT;
 
     // Setup Mario
     mario->m_size = sf::Vector2u(MARIO_WIDTH, MARIO_HEIGHT);
@@ -149,6 +149,7 @@ void Game::drawMario() {
 
 void Game::drawStatistics() {
     mFont.loadFromFile(StatisticsFontPath);
+
     mStatisticsText.setString("Welcome to Donkey Kong 1981");
     mStatisticsText.setFont(mFont);
     mStatisticsText.setPosition(5.f, 5.f);
@@ -176,17 +177,18 @@ void Game::drawCoins() {
         _Coin[i].setTexture(_CoinTexture);
 
         // Get random block, then put a coin upon it
-        const int blockX = getRandomNumber(0, BLOCK_COUNT_X);
-        const int blockY = getRandomNumber(0, BLOCK_COUNT_Y);
+        const auto blockX = getRandomNumber(0, BLOCK_COUNT_X);
+        const auto blockY = getRandomNumber(0, BLOCK_COUNT_Y);
 
-        const sf::Sprite randomBlock = _Block[blockX][blockY];
+        const auto randomBlock = _Block[blockX][blockY];
+        const auto blockBound = randomBlock.getGlobalBounds();
 
         _Coin[i].setPosition(
-            randomBlock.getPosition().x,
-            0.f + BLOCK_SPACE * i + 2 * _sizeBlock.y
+            blockBound.left + (blockBound.width / 2),
+            blockBound.top - _CoinTexture.getSize().y - 5
         );
 
-        std::shared_ptr<Entity> se = std::make_shared<Entity>(false, EntityType::coin);
+        auto se = std::make_shared<Entity>(false, EntityType::coin);
         se->m_sprite = _Coin[i];
         se->m_size = _CoinTexture.getSize();
         se->m_position = _Coin[i].getPosition();
