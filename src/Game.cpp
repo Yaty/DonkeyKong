@@ -6,16 +6,18 @@
 #include "RandomHelpers.h"
 #include "Animation.h"
 #include "AnimatedSprite.h"
+#include "JsonHelpers.h"
 
 const float Game::PlayerSpeed = 100.f;
 const sf::Time Game::TimePerFrame = sf::seconds(1.f / 60.f);
-const std::string BlockTexturePath = "../Media/Textures/Block.png";
-const std::string LadderTexturePath = "../Media/Textures/Echelle.PNG";
-const std::string MarioSpriteSheetPath = "../Media/Textures/mario_sprite.png";
-const std::string StatisticsFontPath = "../Media/Sansation.ttf";
-const std::string CoinTexturePath = "../Media/Textures/coin.png";
-const std::string ScoreFontPath = "../Media/BlockyLettersHollow.ttf";
-const sf::Time jumpTime = sf::seconds(0.2f);
+const auto BlockTexturePath = "../Media/Textures/Block.png";
+const auto LadderTexturePath = "../Media/Textures/Echelle.PNG";
+const auto MarioSpriteSheetPath = "../Media/Textures/mario_sprite.png";
+const auto DonkeySpriteSheetPath = "../Media/Textures/donkey_kong_sprite.png";
+const auto StatisticsFontPath = "../Media/Sansation.ttf";
+const auto CoinTexturePath = "../Media/Textures/coin.png";
+const auto ScoreFontPath = "../Media/BlockyLettersHollow.ttf";
+const auto jumpTime = sf::seconds(0.2f);
 
 
 Game::Game() :
@@ -33,10 +35,12 @@ Game::Game() :
 {
     mWindow.setFramerateLimit(160);
     mario = std::make_shared<Mario>();
+    donkey = std::make_shared<Donkey>();
     drawBlocks();
     drawLadders();
     drawCoins();
     drawMario();
+    drawDonkey();
     drawStatistics();
     drawScore();
 }
@@ -106,8 +110,8 @@ void Game::drawLadders() {
 void Game::drawMario() {
     mSpriteSheet.loadFromFile(MarioSpriteSheetPath);
 
-    const int FRAME_WIDTH = 16;
-    const int FRAME_HEIGHT = 16;
+    const auto FRAME_WIDTH = 16;
+    const auto FRAME_HEIGHT = 16;
     const auto SCALE_WIDTH = MARIO_WIDTH / FRAME_WIDTH;
     const auto SCALE_HEIGHT = MARIO_HEIGHT / FRAME_HEIGHT;
 
@@ -145,6 +149,32 @@ void Game::drawMario() {
 
     // Add Mario to entities
     EntityManager::m_Entities.push_back(mario);
+}
+
+void Game::drawDonkey() {
+    donkey->spriteSheet.loadFromFile(DonkeySpriteSheetPath);
+
+    // Setup Donkey
+    donkey->m_size = sf::Vector2u(60, 60);
+    donkey->m_position = sf::Vector2f(900, 15);
+
+    // Animations
+    donkey->chest.setSpriteSheet(donkey->spriteSheet);
+
+    for (auto const& rect : JsonHelpers::OpenSpriteSheetDescriptor("../Media/donkey_kong_sprite_sheet_descriptor.json")) {
+        donkey->chest.addFrame(rect);
+    }
+
+    donkey->currentAnimation = &donkey->chest;
+
+    // set up AnimatedSprite
+    auto animatedSprite = AnimatedSprite(sf::seconds(0.055f), true, false);
+    animatedSprite.scale(2, 2);
+    donkey->animatedSprite = animatedSprite;
+    donkey->isMoving = true;
+
+    // Add Mario to entities
+    EntityManager::m_Entities.push_back(donkey);
 }
 
 void Game::drawStatistics() {
@@ -309,6 +339,10 @@ void Game::update(sf::Time elapsedTime){
     mario->animatedSprite.play(*mario->currentAnimation);
     mario->animatedSprite.setPosition(mario->m_position);
     mario->animatedSprite.update(elapsedTime);
+
+    donkey->animatedSprite.play(*donkey->currentAnimation);
+    donkey->animatedSprite.setPosition(donkey->m_position);
+    donkey->animatedSprite.update(elapsedTime);
 
     if (!mario->isMoving) {
         mario->animatedSprite.stop();

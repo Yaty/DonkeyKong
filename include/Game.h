@@ -3,6 +3,7 @@
 #include "Animation.h"
 #include "AnimatedSprite.h"
 #include "Mario.h"
+#include "Donkey.h"
 
 #define SCALE_COUNT 6
 #define BLOCK_COUNT_X 11
@@ -35,6 +36,7 @@ class Game {
         void drawBlocks();
         void drawLadders();
         void drawMario();
+        void drawDonkey();
         void drawStatistics();
         void drawCoins();
         void handleCoinsCollisions();
@@ -73,4 +75,5 @@ class Game {
 
         int score;
         std::shared_ptr<Mario> mario;
+        std::shared_ptr<Donkey> donkey;
 };
