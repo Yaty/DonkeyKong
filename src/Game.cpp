@@ -7,6 +7,7 @@
 #include "Animation.h"
 #include "AnimatedSprite.h"
 #include "JsonHelpers.h"
+#include <StartScreen.h>
 
 const float Game::PlayerSpeed = 150.f;
 const sf::Time Game::TimePerFrame = sf::seconds(1.f / 60.f);
@@ -324,19 +325,22 @@ void Game::run() {
     sf::Clock fpsClock;
     sf::Time timeSinceLastUpdate = sf::Time::Zero;
 
-    while (!lost) {
+    while (mWindow.isOpen()) {
         sf::Time elapsedTime = fpsClock.restart();
         timeSinceLastUpdate += elapsedTime;
 
         while (timeSinceLastUpdate > TimePerFrame) {
             timeSinceLastUpdate -= TimePerFrame;
             processEvents();
-            handleCollisions();
-            update(TimePerFrame);
+            if (!won && !lost) {
+                handleCollisions();
+                update(TimePerFrame);
+            }
         }
+
         updateScore();
-        updateStatistics(elapsedTime);
         checkVictory();
+        updateStatistics(elapsedTime);
         render();
     }
 }
@@ -383,7 +387,7 @@ void Game::updateBarrels(sf::Time elapsedTime) {
         } else {
             sf::Vector2f movement(0.f, 0.f);
             if (barrel->isFalling) {
-                barrel->fallingTime+=elapsedTime;
+                barrel->fallingTime+=elapsedTime;    
                 barrel->currentAnimation = &barrel->falling;
                 movement.y += MARIO_GRAVITY;
             } else {
@@ -533,10 +537,10 @@ void Game::render() {
         mWindow.draw(marioBox);
     }
 
-    if (won) {
+    if (won || lost) {
         wonFont.loadFromFile(GameFontPath);
 
-        wonText.setString("You won!");
+        wonText.setString(won ? "You won!" : "Game over!");
         wonText.setFont(wonFont);
         wonText.setPosition(180, 0);
         wonText.setCharacterSize(500);
@@ -595,14 +599,14 @@ void Game::handlePlayerInput(sf::Keyboard::Key key, bool isPressed) {
             break;
 
         case sf::Keyboard::Space:
-            if (won) {
+            if (won || lost) {
                 EntityManager::m_Entities.clear();
                 mWindow.clear();
                 mWindow.display();
                 mWindow.close();
 
-                Game game;
-                game.run();
+                StartScreen startScreen;
+                startScreen.run();
                 break;
             }
 

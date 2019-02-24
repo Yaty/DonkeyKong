@@ -44,7 +44,7 @@ void StartScreen::drawDonkey() {
     donkey->chest.setSpriteSheet(donkey->spriteSheet);
 
     for (auto const& rect : JsonHelpers::OpenSpriteSheetDescriptor("../Media/donkey_kong_sprite_sheet_descriptor.json")) {
-        donkey->chest.addFrame(rect);
+        donkey->chest. addFrame(rect);
     }
 
     donkey->currentAnimation = &donkey->chest;
