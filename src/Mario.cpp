@@ -63,7 +63,7 @@ bool Mario::isOnTopOfLadder() const {
     for (auto const& ladder : laddersInTheSameXAxis) {
         const auto ladderGlobalBounds = ladder.get()->m_sprite.getGlobalBounds();
 
-        if (fabs(ladderGlobalBounds.top - playerFeetY) <= 8) {
+        if (fabs(ladderGlobalBounds.top - playerFeetY) <= 10) {
             return true;
         }
     }
@@ -82,7 +82,7 @@ bool Mario::isOnBottomOfLadder() const {
     const auto laddersInTheSameXAxis = getEntitiesInTheSameXAxis(EntityManager::GetLadders());
 
     for (auto const& ladder : laddersInTheSameXAxis) {
-        if (fabs(ladder.get()->m_position.y + ladder.get()->m_size.y - playerFeetY) <= 5) {
+        if (fabs(ladder.get()->m_position.y + ladder.get()->m_size.y - playerFeetY) <= 10) {
             return true;
         }
     }

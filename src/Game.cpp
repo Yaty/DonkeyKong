@@ -62,10 +62,10 @@ void Game::drawBlocks() {
         _Block[i][BLOCK_COUNT_Y].setTexture(_TextureBlock);
 
         if (i < (BASE_BLOCK_COUNT / 2)) {
-            _Block[i][BLOCK_COUNT_Y].setPosition(-70.f + 70.f * (i + 1), 0.f + BLOCK_SPACE * (BLOCK_COUNT_Y + 1));
+            _Block[i][BLOCK_COUNT_Y].setPosition(-70.f + 70.f * (i + 1), 0.f + BLOCK_SPACE * (BLOCK_COUNT_Y + 1.7f));
         } else {
             up_base += 1;
-            _Block[i][BLOCK_COUNT_Y].setPosition(-70.f + 70.f * (i + 1), 0.f + BLOCK_SPACE * (BLOCK_COUNT_Y + 1) - up_base);
+            _Block[i][BLOCK_COUNT_Y].setPosition(-70.f + 70.f * (i + 1), 0.f + BLOCK_SPACE * (BLOCK_COUNT_Y + 1.7f) - up_base);
         }
 
         std::shared_ptr<Entity> se = std::make_shared<Entity>(false, EntityType::block);
@@ -80,9 +80,9 @@ void Game::drawBlocks() {
             _Block[i][j].setTexture(_TextureBlock);
 
             if (j % 2) {
-                _Block[i][j].setPosition(130.f + 70.f * (i + 1),-5.f + BLOCK_SPACE * (j + 1) + (i + 1));
+                _Block[i][j].setPosition(130.f + 70.f * (i + 1),-5.f + BLOCK_SPACE * (j + 1.7f) + (i + 1));
             } else {
-                _Block[i][j].setPosition(190.f + 70.f * (i + 1), 5.f + BLOCK_SPACE * (j + 1) - (i + 1));
+                _Block[i][j].setPosition(190.f + 70.f * (i + 1), 5.f + BLOCK_SPACE * (j + 1.7f) - (i + 1));
             }
 
             std::shared_ptr<Entity> se = std::make_shared<Entity>(false, EntityType::block);
@@ -101,9 +101,9 @@ void Game::drawLadders() {
         _Ladder[i].setTexture(_LadderTexture);
 
         if (i % 2) {
-            _Ladder[i].setPosition(830.f + 70.f, -30.f + BLOCK_SPACE * (i + 1) + _sizeBlock.y);
+            _Ladder[i].setPosition(830.f + 70.f, -30.f + BLOCK_SPACE * (i + 1.7f) + _sizeBlock.y);
         } else {
-            _Ladder[i].setPosition(230.f + 70.f, -30.f + BLOCK_SPACE * (i + 1) + _sizeBlock.y);
+            _Ladder[i].setPosition(230.f + 70.f, -30.f + BLOCK_SPACE * (i + 1.7f) + _sizeBlock.y);
         }
 
         std::shared_ptr<Entity> se = std::make_shared<Entity>(false, EntityType::ladder);
@@ -124,7 +124,7 @@ void Game::drawMario() {
 
     // Setup Mario
     mario->m_size = sf::Vector2u(MARIO_WIDTH, MARIO_HEIGHT);
-    mario->m_position = sf::Vector2f(100.f + 70.f, BLOCK_SPACE * 7 - MARIO_HEIGHT);
+    mario->m_position = sf::Vector2f(100.f + 30.f, BLOCK_SPACE * 7.7f - MARIO_HEIGHT);
 
     // Static sprites
     const auto standingRightSprite = sf::IntRect(162, 0, FRAME_WIDTH, FRAME_HEIGHT);
@@ -163,7 +163,7 @@ void Game::drawDonkey() {
 
     // Setup Donkey
     donkey->m_size = sf::Vector2u(60, 60);
-    donkey->m_position = sf::Vector2f(900, 15);
+    donkey->m_position = sf::Vector2f(900, 90);
 
     // Animations
     donkey->chest.setSpriteSheet(donkey->spriteSheet);
@@ -480,12 +480,14 @@ void Game::handleFloorsCollisions() {
 
 void Game::handleLaddersCollisions() {
     const auto ladders = EntityManager::GetLadders();
-    const auto playerBounds = mario->getBounds();
+    auto playerBounds = mario->getBounds();
 
     mario->isOnLadder = false;
 
     for (auto const& ladder: ladders) {
-        const auto ladderGlobalBounds = ladder.get()->m_sprite.getGlobalBounds();
+        auto ladderGlobalBounds = ladder.get()->m_sprite.getGlobalBounds();
+        ladderGlobalBounds.top -= 10;
+        ladderGlobalBounds.height += 10;
 
         if (ladderGlobalBounds.intersects(playerBounds)) {
             mario->isOnLadder = true;
