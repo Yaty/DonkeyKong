@@ -17,6 +17,7 @@ const auto DonkeySpriteSheetPath = "../Media/Textures/donkey_kong_sprite.png";
 const auto StatisticsFontPath = "../Media/Sansation.ttf";
 const auto CoinTexturePath = "../Media/Textures/coin.png";
 const auto ScoreFontPath = "../Media/BlockyLettersHollow.ttf";
+const auto BackgroundPath = "../Media/Textures/background.png";
 const auto jumpTime = sf::seconds(0.2f);
 
 
@@ -36,6 +37,7 @@ Game::Game() :
     mWindow.setFramerateLimit(160);
     mario = std::make_shared<Mario>();
     donkey = std::make_shared<Donkey>();
+    drawBackground();
     drawBlocks();
     drawLadders();
     drawCoins();
@@ -43,6 +45,11 @@ Game::Game() :
     drawDonkey();
     drawStatistics();
     drawScore();
+}
+
+void Game::drawBackground() {
+    backgroundTexture.loadFromFile(BackgroundPath);
+    background.setTexture(backgroundTexture);
 }
 
 void Game::drawBlocks() {
@@ -184,6 +191,7 @@ void Game::drawStatistics() {
     mStatisticsText.setFont(mFont);
     mStatisticsText.setPosition(5.f, 5.f);
     mStatisticsText.setCharacterSize(10);
+    mStatisticsText.setFillColor(sf::Color::Black);
 }
 
 void Game::drawScore() {
@@ -193,11 +201,13 @@ void Game::drawScore() {
     scoreAnnouncementText.setFont(scoreFont);
     scoreAnnouncementText.setPosition(1080.f, 5.f);
     scoreAnnouncementText.setCharacterSize(40);
+    scoreAnnouncementText.setFillColor(sf::Color::Black);
 
     scoreText.setString(std::to_string(score));
     scoreText.setFont(scoreFont);
     scoreText.setPosition(1080.f, 50.f);
-    scoreText.setCharacterSize(22);
+    scoreText.setCharacterSize(26);
+    scoreText.setFillColor(sf::Color::Black);
 }
 
 void Game::drawCoins() {
@@ -359,6 +369,7 @@ void Game::update(sf::Time elapsedTime){
 
 void Game::render() {
     mWindow.clear();
+    mWindow.draw(background);
 
     for (const std::shared_ptr<Entity> &entity : EntityManager::m_Entities) {
         if (entity->isAnimated && entity->isMoving) {

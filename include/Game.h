@@ -33,6 +33,7 @@ class Game {
         void updateStatistics(sf::Time elapsedTime);
         void updateScore();
         void handlePlayerInput(sf::Keyboard::Key key, bool isPressed);
+        void drawBackground();
         void drawBlocks();
         void drawLadders();
         void drawMario();
@@ -76,4 +77,7 @@ class Game {
         int score;
         std::shared_ptr<Mario> mario;
         std::shared_ptr<Donkey> donkey;
+
+        sf::Texture backgroundTexture;
+        sf::Sprite background;
 };
