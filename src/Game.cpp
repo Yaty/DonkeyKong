@@ -311,7 +311,7 @@ void Game::drawBarrel() {
     auto animatedSprite = AnimatedSprite(sf::seconds(0.1f), true, false);
     animatedSprite.scale(2, 2);
     se->animatedSprite = animatedSprite;
-
+    se->isMoving = true;
     se->m_size = sf::Vector2u(32, 20);
     se->m_position = _Barrel.getPosition();
 
@@ -395,7 +395,6 @@ void Game::updateBarrels(sf::Time elapsedTime) {
                 movement.x = 0;
             }
 
-            barrel->isMoving = fabs(movement.x) > 0;
             barrel->m_position.x += movement.x * elapsedTime.asSeconds();
             barrel->m_position.y += movement.y * elapsedTime.asSeconds();
 
