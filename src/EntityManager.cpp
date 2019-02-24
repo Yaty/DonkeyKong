@@ -16,8 +16,8 @@ std::list<std::shared_ptr<Entity>> EntityManager::GetCoins() {
     return coins;
 }
 
-void EntityManager::RemoveCoin(std::shared_ptr<Entity> coin) {
-    EntityManager::m_Entities.remove(coin);
+void EntityManager::Remove(std::shared_ptr<Entity> entity) {
+    EntityManager::m_Entities.remove(entity);
 }
 
 std::list<std::shared_ptr<Entity>> EntityManager::GetFloors() {
