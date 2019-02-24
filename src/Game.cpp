@@ -258,8 +258,8 @@ void Game::drawCoins() {
 
         while (true) {
             // Get random block, then put a coin upon it
-            const auto blockX = getRandomNumber(1, BLOCK_COUNT_X - 1);
-            const auto blockY = getRandomNumber(1, BLOCK_COUNT_Y - 1);
+            const auto blockX = getRandomNumber(0, BLOCK_COUNT_X - 1);
+            const auto blockY = getRandomNumber(0, BLOCK_COUNT_Y - 1);
             const auto randomBlock = _Block[blockX][blockY];
             const auto blockBound = randomBlock.getGlobalBounds();
 
