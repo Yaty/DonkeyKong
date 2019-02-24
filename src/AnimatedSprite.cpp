@@ -20,9 +20,6 @@ void AnimatedSprite::setAnimation(const Animation& animation) {
     setFrame(mCurrentFrame);
 }
 
-void AnimatedSprite::setFrameTime(sf::Time time) {
-    mFrameTime = time;
-}
 
 void AnimatedSprite::play() {
     mIsPaused = false;

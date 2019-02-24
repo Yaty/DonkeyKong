@@ -23,7 +23,6 @@ class StartScreen {
 
     private:
         static const sf::Time TimePerFrame;
-        sf::Clock clock;
         sf::RenderWindow mWindow;
         sf::Texture mSpriteSheet;
         sf::Font mFont;

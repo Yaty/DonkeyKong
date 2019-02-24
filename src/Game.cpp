@@ -7,6 +7,7 @@
 #include "Animation.h"
 #include "AnimatedSprite.h"
 #include "JsonHelpers.h"
+#include <StartScreen.h>
 
 const float Game::PlayerSpeed = 150.f;
 const sf::Time Game::TimePerFrame = sf::seconds(1.f / 60.f);
@@ -17,6 +18,7 @@ const auto DonkeySpriteSheetPath = "../Media/Textures/donkey_kong_sprite.png";
 const auto StatisticsFontPath = "../Media/Sansation.ttf";
 const auto CoinTexturePath = "../Media/Textures/coin.png";
 const auto ScoreFontPath = "../Media/BlockyLettersHollow.ttf";
+const auto GameFontPath = "../Media/game_over.ttf";
 const auto BackgroundPath = "../Media/Textures/background.png";
 const auto PeachPath = "../Media/Textures/peach.png";
 const std::string BarrelTexturePath = "../Media/Textures/barrels.png";
@@ -33,7 +35,8 @@ Game::Game() :
     mStatisticsUpdateTime(),
     mStatisticsNumFrames(0),
     score(0),
-    debug(true)
+    debug(false),
+    won(false)
 {
     mWindow.setFramerateLimit(160);
     mario = std::make_shared<Mario>();
@@ -43,8 +46,8 @@ Game::Game() :
     drawLadders();
     drawCoins();
     drawPeach();
-    drawMario();
     drawDonkey();
+    drawMario();
     drawStatistics();
     drawScore();
     drawBarrel();
@@ -124,9 +127,9 @@ void Game::drawPeach() {
     peachSprite.setPosition(550, 10);
 
     std::shared_ptr<Entity> peachEntity = std::make_shared<Entity>(false, EntityType::peach);
-    se->m_sprite = peachSprite;
-    se->m_size = peachTexture.getSize();
-    se->m_position = peachSprite.getPosition();
+    peachEntity->m_sprite = peachSprite;
+    peachEntity->m_size = peachTexture.getSize();
+    peachEntity->m_position = peachSprite.getPosition();
     EntityManager::m_Entities.push_back(peachEntity);
 }
 
@@ -248,34 +251,50 @@ void Game::drawScore() {
 
 void Game::drawCoins() {
     _CoinTexture.loadFromFile(CoinTexturePath);
-    auto ladders = EntityManager::GetLadders();
+    const auto ladders = EntityManager::GetLadders();
 
     for (auto& coin : _Coin) {
         coin.setTexture(_CoinTexture);
 
         while (true) {
             // Get random block, then put a coin upon it
-            const auto blockX = getRandomNumber(0, BLOCK_COUNT_X);
-            const auto blockY = getRandomNumber(0, BLOCK_COUNT_Y);
+            const auto blockX = getRandomNumber(0, BLOCK_COUNT_X - 1);
+            const auto blockY = getRandomNumber(0, BLOCK_COUNT_Y - 1);
             const auto randomBlock = _Block[blockX][blockY];
             const auto blockBound = randomBlock.getGlobalBounds();
 
             coin.setPosition(
-                    blockBound.left + (blockBound.width / 2),
+                    blockBound.left,
                     blockBound.top - _CoinTexture.getSize().y - 5
             );
 
+            auto intersect = false;
+
+            for (const auto &anotherCoin: _Coin) {
+                if (&anotherCoin == &coin) {
+                    continue;
+                }
+
+                if (coin.getGlobalBounds().intersects(anotherCoin.getGlobalBounds())) {
+                    intersect = true;
+                }
+            }
+
+            if (intersect) {
+                continue;
+            }
+
             const auto coinBounds = coin.getGlobalBounds();
-            auto collision = false;
+            auto ladderCollision = false;
 
             for (auto const& ladder : ladders) {
                 if (ladder->m_sprite.getGlobalBounds().intersects(coinBounds)) {
-                    collision = true;
+                    ladderCollision = true;
                     break;
                 }
             }
 
-            if (!collision) {
+            if (!ladderCollision) {
                 break;
             }
         }
@@ -292,7 +311,7 @@ void Game::drawBarrel() {
     _BarrelTexture.loadFromFile(BarrelTexturePath);
 
     _Barrel.setTexture(_BarrelTexture);
-    _Barrel.setPosition(950,100);
+    _Barrel.setPosition(950, 130);
 
     auto se = std::make_shared<Barrel>();
 
@@ -322,17 +341,21 @@ void Game::run() {
     sf::Clock fpsClock;
     sf::Time timeSinceLastUpdate = sf::Time::Zero;
 
-    while (!lost) {
+    while (mWindow.isOpen()) {
         sf::Time elapsedTime = fpsClock.restart();
         timeSinceLastUpdate += elapsedTime;
 
         while (timeSinceLastUpdate > TimePerFrame) {
             timeSinceLastUpdate -= TimePerFrame;
             processEvents();
-            handleCollisions();
-            update(TimePerFrame);
+            if (!won && !lost) {
+                handleCollisions();
+                update(TimePerFrame);
+            }
         }
+
         updateScore();
+        checkVictory();
         updateStatistics(elapsedTime);
         render();
     }
@@ -380,8 +403,13 @@ void Game::updateBarrels(sf::Time elapsedTime) {
         } else {
             sf::Vector2f movement(0.f, 0.f);
             if (barrel->isFalling) {
+                if (barrel->fallingTime > sf::seconds(0.01f)) {
+                    barrel->currentAnimation = &barrel->falling;
+                } else {
+                    barrel->currentAnimation = &barrel->rolling;
+                }
+
                 barrel->fallingTime+=elapsedTime;
-                barrel->currentAnimation = &barrel->falling;
                 movement.y += MARIO_GRAVITY;
             } else {
                 barrel->currentAnimation = &barrel->rolling;
@@ -407,6 +435,7 @@ void Game::updateBarrels(sf::Time elapsedTime) {
     }
 }
 
+
 void Game::updateMario(sf::Time elapsedTime){
     sf::Vector2f movement(0.f, 0.f);
     mario->onTheFloor = mario->isOnTheFloor();
@@ -427,13 +456,11 @@ void Game::updateMario(sf::Time elapsedTime){
         movement.x -= PlayerSpeed;
         mario->currentAnimation = &mario->walkingAnimationLeft;
         mario->isFacingLeft = true;
-        mario->isFacingRight = false;
     }
 
     if (mario->isMovingRight) {
         movement.x += PlayerSpeed;
         mario->currentAnimation = &mario->walkingAnimationRight;
-        mario->isFacingRight = true;
         mario->isFacingLeft = false;
     }
 
@@ -468,6 +495,11 @@ void Game::updateMario(sf::Time elapsedTime){
 
     if (nextXPosition <= 0 || nextXPosition >= SCREEN_WIDTH) {
         movement.x = 0;
+    }
+
+    if (won) {
+        movement.x = 0;
+        movement.y = 0;
     }
 
     mario->isMoving = fabs(movement.x) > 0;
@@ -525,6 +557,28 @@ void Game::render() {
         mWindow.draw(marioBox);
     }
 
+    if (won || lost) {
+        wonFont.loadFromFile(GameFontPath);
+
+        wonText.setString(won ? "You won!" : "Game over!");
+        wonText.setFont(wonFont);
+        wonText.setPosition(180, 0);
+        wonText.setCharacterSize(500);
+        wonText.setFillColor(sf::Color::Black);
+
+        pressSpaceToRestart.setString("Press space to restart!");
+        pressSpaceToRestart.setFont(wonFont);
+        const auto coef = fabs(std::sin(clock.getElapsedTime().asSeconds()));
+        const auto adjustment = (float) (1 - coef) * 64;
+
+        pressSpaceToRestart.setPosition(480 + adjustment, 480 + adjustment);
+        pressSpaceToRestart.setCharacterSize(coef * 64);
+        pressSpaceToRestart.setFillColor(sf::Color::Black);
+
+        mWindow.draw(wonText);
+        mWindow.draw(pressSpaceToRestart);
+    }
+
     mWindow.draw(scoreAnnouncementText);
     mWindow.draw(scoreText);
     mWindow.draw(mStatisticsText);
@@ -565,6 +619,17 @@ void Game::handlePlayerInput(sf::Keyboard::Key key, bool isPressed) {
             break;
 
         case sf::Keyboard::Space:
+            if (won || lost) {
+                EntityManager::m_Entities.clear();
+                mWindow.clear();
+                mWindow.display();
+                mWindow.close();
+
+                StartScreen startScreen;
+                startScreen.run();
+                break;
+            }
+
             if (mario->isFalling) {
                 break;
             }
@@ -695,5 +760,18 @@ void Game::handleElevationCollisions() {
                 break;
             }
         }
+    }
+}
+
+void Game::checkVictory() {
+    if (won) {
+        return;
+    }
+
+    auto const coins = EntityManager::GetCoins();
+    auto const playerBounds = mario->getBounds();
+
+    if (coins.empty() && peachSprite.getGlobalBounds().intersects(playerBounds)) {
+        won = true;
     }
 }

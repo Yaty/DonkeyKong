@@ -52,6 +52,7 @@ class Game {
         void handleLaddersCollisions();
         void handleElevationCollisions();
         void handleCollisions();
+        void checkVictory();
         void handleBarrelsCollisions();
         void drawBarrel();
         void handleBarrelsFloorCollisions();
@@ -84,8 +85,6 @@ class Game {
         sf::Sprite _Block[BASE_BLOCK_COUNT][BLOCK_COUNT_Y];
         sf::Texture _BarrelTexture;
         sf::Sprite _Barrel;
-        sf::Texture _TextureWeapon;
-        sf::Sprite _Weapon;
         sf::Vector2u _sizeBlock;
 
         int score;
@@ -101,4 +100,9 @@ class Game {
 
         sf::Texture peachTexture;
         sf::Sprite peachSprite;
+
+        bool won;
+        sf::Font wonFont;
+        sf::Text wonText;
+        sf::Text pressSpaceToRestart;
 };
