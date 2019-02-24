@@ -770,7 +770,7 @@ void Game::checkVictory() {
 
     auto const coins = EntityManager::GetCoins();
     auto const playerBounds = mario->getBounds();
-    
+
     if (coins.empty() && peachSprite.getGlobalBounds().intersects(playerBounds)) {
         won = true;
     }
