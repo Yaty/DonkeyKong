@@ -35,7 +35,7 @@ Game::Game() :
     mStatisticsUpdateTime(),
     mStatisticsNumFrames(0),
     score(0),
-    debug(true),
+    debug(false),
     won(false)
 {
     mWindow.setFramerateLimit(160);
