@@ -85,8 +85,6 @@ class Game {
         sf::Sprite _Block[BASE_BLOCK_COUNT][BLOCK_COUNT_Y];
         sf::Texture _BarrelTexture;
         sf::Sprite _Barrel;
-        sf::Texture _TextureWeapon;
-        sf::Sprite _Weapon;
         sf::Vector2u _sizeBlock;
 
         int score;

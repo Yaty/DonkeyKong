@@ -258,15 +258,31 @@ void Game::drawCoins() {
 
         while (true) {
             // Get random block, then put a coin upon it
-            const auto blockX = getRandomNumber(0, BLOCK_COUNT_X);
-            const auto blockY = getRandomNumber(0, BLOCK_COUNT_Y);
+            const auto blockX = getRandomNumber(1, BLOCK_COUNT_X - 1);
+            const auto blockY = getRandomNumber(1, BLOCK_COUNT_Y - 1);
             const auto randomBlock = _Block[blockX][blockY];
             const auto blockBound = randomBlock.getGlobalBounds();
 
             coin.setPosition(
-                    blockBound.left + (blockBound.width / 2),
+                    blockBound.left,
                     blockBound.top - _CoinTexture.getSize().y - 5
             );
+
+            auto intersect = false;
+
+            for (const auto &anotherCoin: _Coin) {
+                if (&anotherCoin == &coin) {
+                    continue;
+                }
+
+                if (coin.getGlobalBounds().intersects(anotherCoin.getGlobalBounds())) {
+                    intersect = true;
+                }
+            }
+
+            if (intersect) {
+                continue;
+            }
 
             const auto coinBounds = coin.getGlobalBounds();
             auto ladderCollision = false;
@@ -387,7 +403,7 @@ void Game::updateBarrels(sf::Time elapsedTime) {
         } else {
             sf::Vector2f movement(0.f, 0.f);
             if (barrel->isFalling) {
-                barrel->fallingTime+=elapsedTime;    
+                barrel->fallingTime+=elapsedTime;
                 barrel->currentAnimation = &barrel->falling;
                 movement.y += MARIO_GRAVITY;
             } else {
@@ -414,6 +430,7 @@ void Game::updateBarrels(sf::Time elapsedTime) {
     }
 }
 
+
 void Game::updateMario(sf::Time elapsedTime){
     sf::Vector2f movement(0.f, 0.f);
     mario->onTheFloor = mario->isOnTheFloor();
@@ -434,13 +451,11 @@ void Game::updateMario(sf::Time elapsedTime){
         movement.x -= PlayerSpeed;
         mario->currentAnimation = &mario->walkingAnimationLeft;
         mario->isFacingLeft = true;
-        mario->isFacingRight = false;
     }
 
     if (mario->isMovingRight) {
         movement.x += PlayerSpeed;
         mario->currentAnimation = &mario->walkingAnimationRight;
-        mario->isFacingRight = true;
         mario->isFacingLeft = false;
     }
 
@@ -750,6 +765,8 @@ void Game::checkVictory() {
 
     auto const coins = EntityManager::GetCoins();
     auto const playerBounds = mario->getBounds();
+
+    // printf("%d %d %d\n", coins.size(), coins.empty(), peachSprite.getGlobalBounds().intersects(playerBounds));
 
     if (coins.empty() && peachSprite.getGlobalBounds().intersects(playerBounds)) {
         won = true;

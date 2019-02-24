@@ -10,7 +10,6 @@ class Mario: public Entity {
         bool isMovingDown = false;
         bool isMovingRight = false;
         bool isMovingLeft = false;
-        bool isFacingRight = true;
         bool isFacingLeft = false;
         bool isJumping = false;
         sf::Time lastJump;

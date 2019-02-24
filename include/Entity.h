@@ -40,8 +40,5 @@ class Entity {
         std::list<std::shared_ptr<Entity>> getEntitiesInTheSameXAxis(std::list<std::shared_ptr<Entity>> entities) const;
         bool isOnTheFloor() const;
         bool isOnTopOfLadder() const;
-        // Enemy only
-        bool m_bLeftToRight = true;
-        int m_times = 0;
 };
 
