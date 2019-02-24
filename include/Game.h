@@ -3,19 +3,21 @@
 #include "Animation.h"
 #include "AnimatedSprite.h"
 #include "Mario.h"
+#include "Donkey.h"
 
 #define SCALE_COUNT 6
 #define BLOCK_COUNT_X 11
 #define BASE_BLOCK_COUNT 20
 #define BLOCK_COUNT_Y 6
-#define BLOCK_SPACE 130.f
-#define COIN_COUNT 5
+#define BLOCK_SPACE 120.f
+#define COIN_COUNT 12
 #define COIN_VALUE 100
 #define SCREEN_HEIGHT 960
 #define SCREEN_WIDTH 1280
 #define MARIO_HEIGHT 48
 #define MARIO_WIDTH 32
 #define MARIO_GRAVITY 200.0f
+#define PEACH_PLATFORM_WIDTH 4
 
 class Game {
     public:
@@ -32,9 +34,12 @@ class Game {
         void updateStatistics(sf::Time elapsedTime);
         void updateScore();
         void handlePlayerInput(sf::Keyboard::Key key, bool isPressed);
+        void drawBackground();
         void drawBlocks();
         void drawLadders();
         void drawMario();
+        void drawPeach();
+        void drawDonkey();
         void drawStatistics();
         void drawCoins();
         void handleCoinsCollisions();
@@ -73,4 +78,14 @@ class Game {
 
         int score;
         std::shared_ptr<Mario> mario;
+        std::shared_ptr<Donkey> donkey;
+
+        sf::Texture backgroundTexture;
+        sf::Sprite background;
+
+        sf::Sprite peachPlatform[PEACH_PLATFORM_WIDTH];
+        sf::Sprite peachLadder;
+
+        sf::Texture peachTexture;
+        sf::Sprite peachSprite;
 };

@@ -3,11 +3,13 @@
 #include "Animation.h"
 #include "AnimatedSprite.h"
 
-enum EntityType{
+enum EntityType {
+    donkey,
     player,
     block,
     ladder,
     coin,
+    peach,
     unknown
 };
 
