@@ -8,7 +8,7 @@
 #include "AnimatedSprite.h"
 #include "JsonHelpers.h"
 
-const float Game::PlayerSpeed = 100.f;
+const float Game::PlayerSpeed = 150.f;
 const sf::Time Game::TimePerFrame = sf::seconds(1.f / 60.f);
 const auto BlockTexturePath = "../Media/Textures/Block.png";
 const auto LadderTexturePath = "../Media/Textures/Echelle.PNG";
@@ -20,7 +20,7 @@ const auto ScoreFontPath = "../Media/BlockyLettersHollow.ttf";
 const auto BackgroundPath = "../Media/Textures/background.png";
 const auto PeachPath = "../Media/Textures/peach.png";
 const std::string BarrelTexturePath = "../Media/Textures/barrels.png";
-const auto jumpTime = sf::seconds(0.2f);
+const auto jumpTime = sf::seconds(0.3f);
 
 Game::Game() :
     mWindow(sf::VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), "Donkey Kong 1981", sf::Style::Close),
@@ -648,7 +648,7 @@ void Game::handleBarrelsFloorCollisions() {
             if (floorGlobalBounds.intersects(barrelBounds)) {
                 const auto isBarrelBeneathFloor = floorGlobalBounds.top - barrelBounds.top < 0;
 
-                if(wasFalling && barrel->fallingTime > sf::seconds(0.5f)) {
+                if(wasFalling && barrel->fallingTime > sf::seconds(0.7f)) {
                     barrel->direction *= -1;
                 }
                 barrel->fallingTime = sf::Time::Zero;
