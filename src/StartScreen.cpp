@@ -99,7 +99,7 @@ void StartScreen::handlePlayerInput(sf::Keyboard::Key key, bool isPressed) {
     switch (key) {
 
         case sf::Keyboard::Space:
-            EntityManager::m_Entities.remove(donkey);
+            EntityManager::m_Entities.clear();
             mWindow.clear();
             mWindow.display();
             mWindow.close();
