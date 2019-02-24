@@ -48,6 +48,7 @@ class Game {
         void handleLaddersCollisions();
         void handleElevationCollisions();
         void handleCollisions();
+        void checkVictory();
 
     private:
         static const float PlayerSpeed;
@@ -88,4 +89,9 @@ class Game {
 
         sf::Texture peachTexture;
         sf::Sprite peachSprite;
+
+        bool won;
+        sf::Font wonFont;
+        sf::Text wonText;
+        sf::Text pressSpaceToRestart;
 };

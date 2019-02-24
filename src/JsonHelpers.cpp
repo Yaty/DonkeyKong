@@ -8,7 +8,7 @@ std::list<sf::IntRect> JsonHelpers::OpenSpriteSheetDescriptor(std::string fileNa
     std::ifstream file(fileName, std::ifstream::binary);
     json j = json::parse(file);
 
-    auto rectanglesArray = j["rectangles"];
+    const auto rectanglesArray = j["rectangles"];
     std::list<sf::IntRect> rectangles;
 
     for (auto const& rectangle : rectanglesArray) {
