@@ -4,6 +4,7 @@
 #include "AnimatedSprite.h"
 #include "Mario.h"
 #include "Donkey.h"
+#include "Barrel.h"
 
 #define SCALE_COUNT 6
 #define BLOCK_COUNT_X 11
@@ -18,6 +19,7 @@
 #define MARIO_WIDTH 32
 #define MARIO_GRAVITY 200.0f
 #define PEACH_PLATFORM_WIDTH 4
+#define BARREL_SPAWN_RATE 250
 
 class Game {
     public:
@@ -50,11 +52,15 @@ class Game {
         void handleLaddersCollisions();
         void handleElevationCollisions();
         void handleCollisions();
+        void handleBarrelsCollisions();
         void drawBarrel();
+        void handleBarrelsFloorCollisions();
+        void handleBarrelsPlayerCollisions();
 
     private:
         static const float PlayerSpeed;
         static const sf::Time TimePerFrame;
+        int framesSinceLastBarrel = 0;
         sf::Clock clock;
 
         sf::RenderWindow mWindow;
@@ -68,6 +74,7 @@ class Game {
 
         std::size_t mStatisticsNumFrames;
         bool debug;
+        bool lost = false;
 
         sf::Texture _CoinTexture;
         sf::Sprite _Coin[COIN_COUNT];
@@ -82,8 +89,7 @@ class Game {
         sf::Vector2u _sizeBlock;
 
         int score;
-        std::list<std::shared_ptr<Entity>> barrels;
-        std::shared_ptr<Entity> barrel;
+        std::list<std::shared_ptr<Barrel>> barrels;
         std::shared_ptr<Mario> mario;
         std::shared_ptr<Donkey> donkey;
 
