@@ -29,6 +29,8 @@ class Game {
 
     private:
         void processEvents();
+        void updateMario(sf::Time elapsedTime);
+        void updateBarrels(sf::Time elapsedTime);
         void update(sf::Time elapsedTime);
         void render();
         void updateStatistics(sf::Time elapsedTime);
@@ -48,6 +50,7 @@ class Game {
         void handleLaddersCollisions();
         void handleElevationCollisions();
         void handleCollisions();
+        void drawBarrel();
 
     private:
         static const float PlayerSpeed;
@@ -72,11 +75,15 @@ class Game {
         sf::Sprite _Ladder[SCALE_COUNT];
         sf::Texture _TextureBlock;
         sf::Sprite _Block[BASE_BLOCK_COUNT][BLOCK_COUNT_Y];
+        sf::Texture _BarrelTexture;
+        sf::Sprite _Barrel;
         sf::Texture _TextureWeapon;
         sf::Sprite _Weapon;
         sf::Vector2u _sizeBlock;
 
         int score;
+        std::list<std::shared_ptr<Entity>> barrels;
+        std::shared_ptr<Entity> barrel;
         std::shared_ptr<Mario> mario;
         std::shared_ptr<Donkey> donkey;
 

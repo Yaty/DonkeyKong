@@ -19,8 +19,8 @@ const auto CoinTexturePath = "../Media/Textures/coin.png";
 const auto ScoreFontPath = "../Media/BlockyLettersHollow.ttf";
 const auto BackgroundPath = "../Media/Textures/background.png";
 const auto PeachPath = "../Media/Textures/peach.png";
+const std::string BarrelTexturePath = "../Media/Textures/Block.png";
 const auto jumpTime = sf::seconds(0.2f);
-
 
 Game::Game() :
     mWindow(sf::VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), "Donkey Kong 1981", sf::Style::Close),
@@ -39,6 +39,7 @@ Game::Game() :
     mario = std::make_shared<Mario>();
     donkey = std::make_shared<Donkey>();
     drawBackground();
+    barrel = std::make_shared<Entity>(false, EntityType::barrel);
     drawBlocks();
     drawLadders();
     drawCoins();
@@ -47,6 +48,7 @@ Game::Game() :
     drawDonkey();
     drawStatistics();
     drawScore();
+    drawBarrel();
 }
 
 void Game::drawBackground() {
@@ -287,6 +289,21 @@ void Game::drawCoins() {
     }
 }
 
+void Game::drawBarrel() {
+    _BarrelTexture.loadFromFile(BarrelTexturePath);
+
+    _Barrel.setTexture(_BarrelTexture);
+    _Barrel.setPosition(50,50);
+
+    barrel->m_size = _BarrelTexture.getSize();
+    barrel->m_position = sf::Vector2f(950,100);
+
+    // Static sprites
+    barrel->m_sprite = _Barrel;
+
+    EntityManager::m_Entities.push_back(barrel);
+}
+
 void Game::run() {
     sf::Clock fpsClock;
     sf::Time timeSinceLastUpdate = sf::Time::Zero;
@@ -330,7 +347,34 @@ void Game::processEvents(){
     }
 }
 
-void Game::update(sf::Time elapsedTime){
+void Game::update(sf::Time elapsedTime) {
+    updateMario(elapsedTime);
+    updateBarrels(elapsedTime);
+}
+
+void Game::updateBarrels(sf::Time elapsedTime) {
+    sf::Vector2f movement(0.f, 0.f);
+    if (barrel->isFalling) {
+        movement.y += MARIO_GRAVITY;
+    } else {
+        movement.x -= PlayerSpeed;
+    }
+
+
+    auto nextXPosition = mario->m_position.x + (movement.x * elapsedTime.asSeconds());
+
+    if (nextXPosition <= 0 || nextXPosition >= SCREEN_WIDTH) {
+        movement.x = 0;
+    }
+
+    barrel->isMoving = fabs(movement.x) > 0;
+    barrel->m_position.x += movement.x * elapsedTime.asSeconds();
+    barrel->m_position.y += movement.y * elapsedTime.asSeconds();
+
+    barrel->m_sprite.setPosition(barrel->m_position);
+}
+
+void Game::updateMario(sf::Time elapsedTime){
     sf::Vector2f movement(0.f, 0.f);
     mario->onTheFloor = mario->isOnTheFloor();
     mario->onBottomOfLadder = mario->isOnBottomOfLadder();
@@ -514,7 +558,10 @@ void Game::handleCoinsCollisions() {
 void Game::handleFloorsCollisions() {
     const auto floors = EntityManager::GetFloors();
     auto playerBounds = mario->getBounds();
+    auto barrelBounds = barrel->getBounds();
 
+    barrelBounds.height +=1;
+    barrel->isFalling = true;
     playerBounds.height += 1;
     mario->isFalling = true;
 
@@ -524,7 +571,10 @@ void Game::handleFloorsCollisions() {
         if (floorGlobalBounds.intersects(playerBounds)) {
             const auto isPlayerBeneathFloor = floorGlobalBounds.top - playerBounds.top < 0;
             mario->isFalling = isPlayerBeneathFloor;
-            return;
+        }
+        if (floorGlobalBounds.intersects(barrelBounds)) {
+            const auto isPlayerBeneathFloor = floorGlobalBounds.top - barrelBounds.top < 0;
+            barrel->isFalling = isPlayerBeneathFloor;
         }
     }
 }
