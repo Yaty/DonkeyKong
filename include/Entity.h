@@ -9,6 +9,7 @@ enum EntityType {
     block,
     ladder,
     coin,
+    peach,
     unknown
 };
 

@@ -18,6 +18,7 @@ const auto StatisticsFontPath = "../Media/Sansation.ttf";
 const auto CoinTexturePath = "../Media/Textures/coin.png";
 const auto ScoreFontPath = "../Media/BlockyLettersHollow.ttf";
 const auto BackgroundPath = "../Media/Textures/background.png";
+const auto PeachPath = "../Media/Textures/peach.png";
 const auto jumpTime = sf::seconds(0.2f);
 
 
@@ -41,6 +42,7 @@ Game::Game() :
     drawBlocks();
     drawLadders();
     drawCoins();
+    drawPeach();
     drawMario();
     drawDonkey();
     drawStatistics();
@@ -71,7 +73,7 @@ void Game::drawBlocks() {
         std::shared_ptr<Entity> se = std::make_shared<Entity>(false, EntityType::block);
         se->m_sprite = _Block[i][BLOCK_COUNT_Y];
         se->m_size = _TextureBlock.getSize();
-        se->m_position = _Block[i][BLOCK_COUNT_Y].getPosition();
+        se->m_position =_Block[i][BLOCK_COUNT_Y].getPosition();
         EntityManager::m_Entities.push_back(se);
     }
 
@@ -92,6 +94,39 @@ void Game::drawBlocks() {
             EntityManager::m_Entities.push_back(se);
         }
     }
+}
+
+void Game::drawPeach() {
+    for (int i = 0; i < PEACH_PLATFORM_WIDTH; i++) {
+        peachPlatform[i].setTexture(_TextureBlock);
+        peachPlatform[i].setPosition(550 + (i * _TextureBlock.getSize().x), 85);
+
+        std::shared_ptr<Entity> se = std::make_shared<Entity>(false, EntityType::block);
+        se->m_sprite = peachPlatform[i];
+        se->m_size = _TextureBlock.getSize();
+        se->m_position = peachPlatform[i].getPosition();
+        EntityManager::m_Entities.push_back(se);
+    }
+
+    peachLadder.setTexture(_LadderTexture);
+    peachLadder.setPosition(800, _sizeBlock.y + 50);
+
+    std::shared_ptr<Entity> se = std::make_shared<Entity>(false, EntityType::ladder);
+    se->m_sprite = peachLadder;
+    se->m_size = _LadderTexture.getSize();
+    se->m_position = peachLadder.getPosition();
+    EntityManager::m_Entities.push_back(se);
+
+    peachTexture.loadFromFile(PeachPath);
+    peachSprite.setTexture(peachTexture);
+    peachSprite.setScale(0.45f, 0.45f);
+    peachSprite.setPosition(550, 10);
+
+    std::shared_ptr<Entity> peachEntity = std::make_shared<Entity>(false, EntityType::peach);
+    se->m_sprite = peachSprite;
+    se->m_size = peachTexture.getSize();
+    se->m_position = peachSprite.getPosition();
+    EntityManager::m_Entities.push_back(peachEntity);
 }
 
 void Game::drawLadders() {
@@ -212,26 +247,42 @@ void Game::drawScore() {
 
 void Game::drawCoins() {
     _CoinTexture.loadFromFile(CoinTexturePath);
+    auto ladders = EntityManager::GetLadders();
 
-    for (int i = 0; i < COIN_COUNT; i++) {
-        _Coin[i].setTexture(_CoinTexture);
+    for (auto& coin : _Coin) {
+        coin.setTexture(_CoinTexture);
 
-        // Get random block, then put a coin upon it
-        const auto blockX = getRandomNumber(0, BLOCK_COUNT_X);
-        const auto blockY = getRandomNumber(0, BLOCK_COUNT_Y);
+        while (true) {
+            // Get random block, then put a coin upon it
+            const auto blockX = getRandomNumber(0, BLOCK_COUNT_X);
+            const auto blockY = getRandomNumber(0, BLOCK_COUNT_Y);
+            const auto randomBlock = _Block[blockX][blockY];
+            const auto blockBound = randomBlock.getGlobalBounds();
 
-        const auto randomBlock = _Block[blockX][blockY];
-        const auto blockBound = randomBlock.getGlobalBounds();
+            coin.setPosition(
+                    blockBound.left + (blockBound.width / 2),
+                    blockBound.top - _CoinTexture.getSize().y - 5
+            );
 
-        _Coin[i].setPosition(
-            blockBound.left + (blockBound.width / 2),
-            blockBound.top - _CoinTexture.getSize().y - 5
-        );
+            const auto coinBounds = coin.getGlobalBounds();
+            auto collision = false;
+
+            for (auto const& ladder : ladders) {
+                if (ladder->m_sprite.getGlobalBounds().intersects(coinBounds)) {
+                    collision = true;
+                    break;
+                }
+            }
+
+            if (!collision) {
+                break;
+            }
+        }
 
         auto se = std::make_shared<Entity>(false, EntityType::coin);
-        se->m_sprite = _Coin[i];
+        se->m_sprite = coin;
         se->m_size = _CoinTexture.getSize();
-        se->m_position = _Coin[i].getPosition();
+        se->m_position = coin.getPosition();
         EntityManager::m_Entities.push_back(se);
     }
 }

@@ -10,13 +10,14 @@
 #define BASE_BLOCK_COUNT 20
 #define BLOCK_COUNT_Y 6
 #define BLOCK_SPACE 120.f
-#define COIN_COUNT 9
+#define COIN_COUNT 12
 #define COIN_VALUE 100
 #define SCREEN_HEIGHT 960
 #define SCREEN_WIDTH 1280
 #define MARIO_HEIGHT 48
 #define MARIO_WIDTH 32
 #define MARIO_GRAVITY 200.0f
+#define PEACH_PLATFORM_WIDTH 4
 
 class Game {
     public:
@@ -37,6 +38,7 @@ class Game {
         void drawBlocks();
         void drawLadders();
         void drawMario();
+        void drawPeach();
         void drawDonkey();
         void drawStatistics();
         void drawCoins();
@@ -80,4 +82,10 @@ class Game {
 
         sf::Texture backgroundTexture;
         sf::Sprite background;
+
+        sf::Sprite peachPlatform[PEACH_PLATFORM_WIDTH];
+        sf::Sprite peachLadder;
+
+        sf::Texture peachTexture;
+        sf::Sprite peachSprite;
 };
