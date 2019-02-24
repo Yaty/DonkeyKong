@@ -2,6 +2,7 @@
 
 #include "Animation.h"
 #include "AnimatedSprite.h"
+#include <list>
 
 enum EntityType {
     donkey,
@@ -10,6 +11,7 @@ enum EntityType {
     ladder,
     coin,
     peach,
+    barrel,
     unknown
 };
 
@@ -28,7 +30,16 @@ class Entity {
         AnimatedSprite animatedSprite;
         bool isAnimated = false;
         bool isMoving = false;
-
+        bool isOnLadder = false;
+        bool onBottomOfLadder = false;
+        bool onTopOfLadder = false;
+        bool onTheFloor = true;
+        bool isFalling = true;
+        bool isClimbing;
+        sf::Rect<float> getBounds() const;
+        std::list<std::shared_ptr<Entity>> getEntitiesInTheSameXAxis(std::list<std::shared_ptr<Entity>> entities) const;
+        bool isOnTheFloor() const;
+        bool isOnTopOfLadder() const;
         // Enemy only
         bool m_bLeftToRight = true;
         int m_times = 0;

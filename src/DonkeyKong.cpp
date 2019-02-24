@@ -3,9 +3,10 @@
 
 #include "pch.h"
 #include "Game.h"
+#include "StartScreen.h"
 
 
 int main() {
-    Game game;
-    game.run();
+    StartScreen startScreen;
+    startScreen.run();
 }
