@@ -311,7 +311,7 @@ void Game::drawBarrel() {
     _BarrelTexture.loadFromFile(BarrelTexturePath);
 
     _Barrel.setTexture(_BarrelTexture);
-    _Barrel.setPosition(950,100);
+    _Barrel.setPosition(950, 130);
 
     auto se = std::make_shared<Barrel>();
 
@@ -403,8 +403,13 @@ void Game::updateBarrels(sf::Time elapsedTime) {
         } else {
             sf::Vector2f movement(0.f, 0.f);
             if (barrel->isFalling) {
+                if (barrel->fallingTime > sf::seconds(0.01f)) {
+                    barrel->currentAnimation = &barrel->falling;
+                } else {
+                    barrel->currentAnimation = &barrel->rolling;
+                }
+
                 barrel->fallingTime+=elapsedTime;
-                barrel->currentAnimation = &barrel->falling;
                 movement.y += MARIO_GRAVITY;
             } else {
                 barrel->currentAnimation = &barrel->rolling;
@@ -765,9 +770,7 @@ void Game::checkVictory() {
 
     auto const coins = EntityManager::GetCoins();
     auto const playerBounds = mario->getBounds();
-
-    // printf("%d %d %d\n", coins.size(), coins.empty(), peachSprite.getGlobalBounds().intersects(playerBounds));
-
+    
     if (coins.empty() && peachSprite.getGlobalBounds().intersects(playerBounds)) {
         won = true;
     }
